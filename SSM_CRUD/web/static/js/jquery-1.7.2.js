@@ -4507,7 +4507,7 @@ var Expr = Sizzle.selectors = {
 			else if ( match[2] ) {
 				Sizzle.error( match[0] );
 			}
-			
+
 			match[0] = done++;
 
 			return match;
