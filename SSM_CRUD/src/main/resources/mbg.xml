@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+    <!--<classPathEntry location="/Program Files/IBM/SQLLIB/java/db2java.zip" />-->
+
+    <!--
+        targetRuntime：运行的目标
+            MyBatis3 ：生成带条件的增删改查
+            MyBatis3Simple：生成基本的增删改查
+    -->
+    <context id="DB2Tables" targetRuntime="MyBatis3">
+        <!-- 阻止生成注释 -->
+        <commentGenerator>
+            <property name="suppressAllComments" value="true"/>
+        </commentGenerator>
+
+        <!-- jdbcConnection：指定如何连接到目标数据库 -->
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+                        connectionURL="jdbc:mysql://localhost:3306/mybatis?useSSL=false"
+                        userId="root"
+                        password="root">
+        </jdbcConnection>
+
+        <!-- javaTypeResolver：java类型解析器 -->
+        <javaTypeResolver >
+            <property name="forceBigDecimals" value="false" />
+        </javaTypeResolver>
+
+        <!-- javaModelGenerator：指定 javaBean的生成策略
+            targetPackage=""：目标的包名
+            targetProject=""：目标工程名，".\src"表示当前工程下
+        -->
+        <javaModelGenerator targetPackage="edu.hue.crud.bean" targetProject=".\src\main\java">
+            <property name="enableSubPackages" value="true" />
+            <property name="trimStrings" value="true" />
+        </javaModelGenerator>
+
+        <!-- sqlMapGenerator：指定 sql映射生成策略 -->
+        <sqlMapGenerator targetPackage="mapper"  targetProject=".\src\main\resources">
+            <property name="enableSubPackages" value="true" />
+        </sqlMapGenerator>
+
+        <!-- javaClientGenerator：指定 mapper 接口所在的位置 -->
+        <javaClientGenerator type="XMLMAPPER" targetPackage="edu.hue.crud.dao"  targetProject=".\src\main\java">
+            <property name="enableSubPackages" value="true" />
+        </javaClientGenerator>
+
+        <!-- 指定要逆向分析哪些表
+            domainObjectName：指定生成类的名字
+        -->
+        <table tableName="tbl_employee" domainObjectName="Employee"></table>
+        <table tableName="tbl_dept" domainObjectName="Department"></table>
+
+    </context>
+</generatorConfiguration>

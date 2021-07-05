@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:mybatis="http://mybatis.org/schema/mybatis-spring"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/tx
+                           http://www.springframework.org/schema/tx/spring-tx.xsd
+                           http://mybatis.org/schema/mybatis-spring
+                           http://mybatis.org/schema/mybatis-spring.xsd
+                           http://www.springframework.org/schema/aop
+                           http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- Spring配置文件，这里主要是和业务逻辑有关的 -->
+
+    <!-- Spring不扫描控制器 -->
+    <context:component-scan base-package="edu.hue.crud">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!-- =============================数据源=============================== -->
+    <context:property-placeholder location="classpath:dbconfig.properties"></context:property-placeholder>
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="driverClassName" value="${jdbc.driver}"></property>
+        <property name="url" value="${jdbc.url}"></property>
+        <property name="username" value="${jdbc.username}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+    </bean>
+    <!-- =============================数据源=============================== -->
+
+    <!-- ============================事务控制的配置================================ -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <!-- 指定数据源的位置 -->
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+
+    <!-- 两种方法：
+            1、开启基于注解的事务
+            2、使用 xml 配置形式的事务（比较重要的都使用配置式）
+    -->
+    <!-- 配置式 -->
+    <aop:config>
+        <!-- 配置切入点 expression：切入点表达式 -->
+        <aop:pointcut id="txPoint" expression="execution(* edu.hue.crud.service..*(..))"/>
+        <!-- 配置切面：配置事务增强 -->
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="txPoint"></aop:advisor>
+    </aop:config>
+
+    <!-- 配置事务增强：如何切入 -->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <!-- *：表示所有方法都是事务方法 -->
+            <tx:method name="*"/>
+            <!-- 以get开始的方法
+                read-only="true"：设置只读
+            -->
+            <tx:method name="get*" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+    <!-- ============================事务控制的配置================================ -->
+
+    <!-- ==============================配置和 MyBatis 的整合============================ -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 数据源 -->
+        <property name="dataSource" ref="dataSource"></property>
+        <!-- 指定 MyBatis全局配置文件的位置 -->
+        <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+        <!-- 指定 mapper 文件的位置 -->
+        <property name="mapperLocations" value="classpath:mapper/*.xml"></property>
+    </bean>
+
+    <!-- 扫描所有 mapper 接口的实现类，将其加入 IOC 容器中 -->
+    <mybatis:scan base-package="edu.hue.crud.dao"></mybatis:scan>
+    <!-- ==============================配置和 MyBatis 的整合============================ -->
+
+    <!-- 配置一个可以执行批量操作的sqlSession -->
+    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory"/>
+        <constructor-arg name="executorType" value="BATCH"></constructor-arg>
+    </bean>
+
+</beans>
